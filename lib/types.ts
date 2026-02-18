@@ -12,14 +12,21 @@ export interface ContentBlock {
     sortOrder: number;
 }
 
+export interface SocialLink {
+    platform: string;
+    url: string;
+}
+
 export interface HubConfig {
     slug: string;
     eventName: string;
     logoUrl: string;
+    heroImageUrl: string;
     primaryColor: string;
     backgroundColor: string;
     heroTagline: string;
     heroSubtext: string;
+    socialLinks: SocialLink[];
     blocks: ContentBlock[];
     isPublished: boolean;
     updatedAt: string;
@@ -29,10 +36,12 @@ export const DEFAULT_HUB: HubConfig = {
     slug: "",
     eventName: "New Event",
     logoUrl: "",
+    heroImageUrl: "",
     primaryColor: "#FF10A8",
     backgroundColor: "#0A0A0F",
     heroTagline: "Your Game. Your Voice.",
     heroSubtext: "Join the conversation and get involved.",
+    socialLinks: [],
     blocks: [],
     isPublished: false,
     updatedAt: new Date().toISOString(),
@@ -71,10 +80,12 @@ export function normalizeHub(hub: any): HubConfig {
         slug: hub.slug || "",
         eventName: hub.eventName || "Untitled Hub",
         logoUrl: hub.logoUrl || "",
+        heroImageUrl: hub.heroImageUrl || "",
         primaryColor: hub.primaryColor || "#FF10A8",
         backgroundColor: hub.backgroundColor || "#0A0A0F",
         heroTagline: hub.heroTagline || "",
         heroSubtext: hub.heroSubtext || "",
+        socialLinks: hub.socialLinks || [],
         blocks,
         isPublished: hub.isPublished ?? false,
         updatedAt: hub.updatedAt || new Date().toISOString(),

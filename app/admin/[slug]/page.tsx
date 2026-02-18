@@ -297,8 +297,59 @@ export default function HubEditorPage() {
                             <Field label="Background Colour"><ColorInput value={hub.backgroundColor} onChange={(v) => updateHub({ backgroundColor: v })} /></Field>
                         </div>
                         <ImageUpload label="Logo" value={hub.logoUrl} onChange={(v) => updateHub({ logoUrl: v })} placeholder="Drop your event logo here" aspectHint="Square (1:1) recommended" />
+                        <ImageUpload label="Hero Background Image" value={hub.heroImageUrl} onChange={(v) => updateHub({ heroImageUrl: v })} placeholder="Full-width background image for the hero" aspectHint="Wide (16:9 or wider) recommended" />
                         <Field label="Tagline"><TextInput value={hub.heroTagline} onChange={(v) => updateHub({ heroTagline: v })} placeholder="Your Game. Your Voice." /></Field>
                         <Field label="Subtext"><TextInput value={hub.heroSubtext} onChange={(v) => updateHub({ heroSubtext: v })} placeholder="Short description..." /></Field>
+
+                        {/* Social Links */}
+                        <div>
+                            <label className="block text-[11px] font-semibold text-gray-400 mb-2 uppercase tracking-wider">Social Links</label>
+                            <div className="space-y-2">
+                                {(hub.socialLinks || []).map((link, i) => (
+                                    <div key={i} className="flex gap-2">
+                                        <select
+                                            value={link.platform}
+                                            onChange={(e) => {
+                                                const updated = [...(hub.socialLinks || [])];
+                                                updated[i] = { ...updated[i], platform: e.target.value };
+                                                updateHub({ socialLinks: updated });
+                                            }}
+                                            className="w-32 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white outline-none focus:border-[#FF10A8]/50 transition-colors appearance-none cursor-pointer"
+                                        >
+                                            {["twitter", "instagram", "tiktok", "youtube", "facebook", "linkedin", "whatsapp", "website"].map((p) => (
+                                                <option key={p} value={p} className="bg-[#1a1a24]">{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="text"
+                                            value={link.url}
+                                            onChange={(e) => {
+                                                const updated = [...(hub.socialLinks || [])];
+                                                updated[i] = { ...updated[i], url: e.target.value };
+                                                updateHub({ socialLinks: updated });
+                                            }}
+                                            placeholder="https://..."
+                                            className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-sm text-white placeholder-gray-500 outline-none focus:border-[#FF10A8]/50 transition-all"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                const updated = (hub.socialLinks || []).filter((_, idx) => idx !== i);
+                                                updateHub({ socialLinks: updated });
+                                            }}
+                                            className="p-2.5 rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button
+                                    onClick={() => updateHub({ socialLinks: [...(hub.socialLinks || []), { platform: "twitter", url: "" }] })}
+                                    className="w-full py-2 rounded-xl border border-dashed border-white/[0.08] hover:border-[#FF10A8]/40 hover:bg-[#FF10A8]/5 text-xs text-gray-400 hover:text-[#FF10A8] transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <Plus size={14} />Add Social Link
+                                </button>
+                            </div>
+                        </div>
                     </Section>
 
                     {/* Blocks — the main content area */}

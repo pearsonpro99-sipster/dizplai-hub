@@ -8,10 +8,12 @@ function dbToHub(row: any, blocks: any[] = []): HubConfig {
         slug: row.slug,
         eventName: row.event_name,
         logoUrl: row.logo_url || "",
+        heroImageUrl: row.homepage_image_url || "",
         primaryColor: row.primary_color || "#FF10A8",
         backgroundColor: row.background_color || "#0A0A0F",
         heroTagline: row.hero_tagline || "",
         heroSubtext: row.hero_subtext || "",
+        socialLinks: row.social_links || [],
         blocks: blocks
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((b) => ({
@@ -88,10 +90,12 @@ export async function createHub(hubData: HubConfig): Promise<HubConfig> {
             slug: hubData.slug,
             event_name: hubData.eventName,
             logo_url: hubData.logoUrl || "",
+            homepage_image_url: hubData.heroImageUrl || "",
             primary_color: hubData.primaryColor || "#FF10A8",
             background_color: hubData.backgroundColor || "#0A0A0F",
             hero_tagline: hubData.heroTagline || "",
             hero_subtext: hubData.heroSubtext || "",
+            social_links: hubData.socialLinks || [],
             is_published: hubData.isPublished || false,
         })
         .select()
@@ -120,10 +124,12 @@ export async function updateHub(
             event_name: updates.eventName,
             slug: updates.slug || slug,
             logo_url: updates.logoUrl,
+            homepage_image_url: updates.heroImageUrl,
             primary_color: updates.primaryColor,
             background_color: updates.backgroundColor,
             hero_tagline: updates.heroTagline,
             hero_subtext: updates.heroSubtext,
+            social_links: updates.socialLinks,
             is_published: updates.isPublished,
             updated_at: new Date().toISOString(),
         })
