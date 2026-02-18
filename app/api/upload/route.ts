@@ -1,11 +1,10 @@
-// app/api/upload/route.ts — Image upload handler (local storage for POC)
-// Swap to Vercel Blob or Supabase Storage for production
-
+// app/api/upload/route.ts — Image upload via Supabase Storage
 import { NextRequest, NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
+import { supabase } from "@/lib/supabase";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp", "image/gif"];
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const BUCKET = "hub-assets";
 
 export async function POST(req: NextRequest) {
     try {
@@ -16,19 +15,16 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "No file provided" }, { status: 400 });
         }
 
-        // Validate file type
-        const allowedTypes = ["image/png", "image/jpeg", "image/svg+xml", "image/webp", "image/gif"];
-        if (!allowedTypes.includes(file.type)) {
+        if (!ALLOWED_TYPES.includes(file.type)) {
             return NextResponse.json(
-                { error: "Invalid file type. Allowed: PNG, JPG, SVG, WebP, GIF" },
+                { error: `Invalid file type: ${file.type}. Allowed: PNG, JPG, SVG, WebP, GIF` },
                 { status: 400 }
             );
         }
 
-        // Max 5MB
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > MAX_SIZE) {
             return NextResponse.json(
-                { error: "File too large. Max 5MB" },
+                { error: "File too large. Max 5MB." },
                 { status: 400 }
             );
         }
@@ -36,24 +32,36 @@ export async function POST(req: NextRequest) {
         // Generate unique filename
         const ext = file.name.split(".").pop() || "png";
         const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const path = `uploads/${filename}`;
 
-        // Ensure upload directory exists
-        await fs.mkdir(UPLOAD_DIR, { recursive: true });
+        // Convert to buffer
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
 
-        // Write file
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        await fs.writeFile(path.join(UPLOAD_DIR, filename), buffer);
+        // Upload to Supabase Storage
+        const { data, error } = await supabase.storage
+            .from(BUCKET)
+            .upload(path, buffer, {
+                contentType: file.type,
+                upsert: false,
+            });
 
-        // Return the public URL
-        const url = `/uploads/${filename}`;
+        if (error) {
+            console.error("Supabase upload error:", error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
 
-        return NextResponse.json({ url, filename });
+        // Get public URL
+        const { data: urlData } = supabase.storage
+            .from(BUCKET)
+            .getPublicUrl(data.path);
+
+        return NextResponse.json({
+            url: urlData.publicUrl,
+            path: data.path,
+        });
     } catch (err: any) {
         console.error("Upload error:", err);
-        return NextResponse.json(
-            { error: "Upload failed" },
-            { status: 500 }
-        );
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
