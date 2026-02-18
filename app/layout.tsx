@@ -1,9 +1,11 @@
+// app/layout.tsx — Root layout
 import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Dizplai Interaction Hub",
-  description: "Your single point of fan engagement",
+  title: "Dizplai Hub",
+  description: "Interactive fan engagement hubs powered by Dizplai",
+  icons: { icon: "/favicon.ico" },
 };
 
 export default function RootLayout({
@@ -13,13 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="antialiased">{children}</body>
+      <body className="bg-[#0D0D15] text-gray-100 antialiased">
+        {children}
+      </body>
     </html>
   );
 }
