@@ -50,7 +50,7 @@ export function QRCodeBlock({ slug }: QRCodeBlockProps) {
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
       <div className="px-4 py-3 border-b border-white/[0.04] flex items-center gap-2">
-        <QrCode size={14} className="text-purple-400" />
+        <QrCode size={14} className="text-[#FF10A8]" />
         <span className="text-xs font-semibold text-gray-300">
           QR Code & Share
         </span>
@@ -100,7 +100,7 @@ export function QRCodeBlock({ slug }: QRCodeBlockProps) {
           </button>
           <button
             onClick={downloadQR}
-            className="py-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-xs font-medium text-purple-300 transition-colors flex items-center justify-center gap-1.5"
+            className="py-2 rounded-lg bg-[#FF10A8]/10 hover:bg-[#FF10A8]/20 border border-[#FF10A8]/20 text-xs font-medium text-[#FF10A8]/80 transition-colors flex items-center justify-center gap-1.5"
           >
             <Download size={13} />
             Download QR

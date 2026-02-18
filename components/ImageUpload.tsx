@@ -148,7 +148,7 @@ export function ImageUpload({
                 className={`
           relative rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition-all
           ${dragOver
-                        ? "border-purple-500 bg-purple-500/10"
+                        ? "border-[#FF10A8] bg-[#FF10A8]/10"
                         : "border-white/10 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.04]"
                     }
           ${uploading ? "pointer-events-none opacity-60" : ""}
@@ -156,7 +156,7 @@ export function ImageUpload({
             >
                 {uploading ? (
                     <div className="flex flex-col items-center gap-2">
-                        <Loader2 size={24} className="text-purple-400 animate-spin" />
+                        <Loader2 size={24} className="text-[#FF10A8] animate-spin" />
                         <p className="text-xs text-gray-400">Uploading...</p>
                     </div>
                 ) : (
@@ -200,7 +200,7 @@ export function ImageUpload({
                             }
                         }
                     }}
-                    className="flex-1 px-2 py-1 rounded text-[11px] bg-white/[0.04] border border-white/5 text-gray-400 outline-none focus:border-purple-500/50 transition-colors"
+                    className="flex-1 px-2 py-1 rounded text-[11px] bg-white/[0.04] border border-white/5 text-gray-400 outline-none focus:border-[#FF10A8]/50 transition-colors"
                 />
             </div>
 

@@ -23,11 +23,51 @@
       }
     ],
     "sectionOrder": [
-      "hero",
       "sponsor",
-      "cards"
+      "cards",
+      "hero"
     ],
     "isPublished": true,
-    "updatedAt": "2026-02-12T14:41:32.813Z"
+    "updatedAt": "2026-02-12T15:18:02.823Z"
+  },
+  {
+    "slug": "leeds",
+    "eventName": "leeds",
+    "logoUrl": "",
+    "sponsorBannerUrl": "",
+    "sponsorLink": "",
+    "primaryColor": "#FF10A8",
+    "secondaryColor": "#FF6020",
+    "backgroundColor": "#0A0A0F",
+    "heroTagline": "Your Game. Your Voice.",
+    "heroSubtext": "Join the conversation and get involved.",
+    "blocks": [],
+    "sectionOrder": [
+      "sponsor",
+      "hero",
+      "blocks"
+    ],
+    "isPublished": false,
+    "updatedAt": "2026-02-17T09:29:51.950Z"
+  },
+  {
+    "slug": "villa-vs-leeds",
+    "eventName": "villa vs leeds",
+    "logoUrl": "",
+    "sponsorBannerUrl": "",
+    "sponsorLink": "",
+    "primaryColor": "#FF10A8",
+    "secondaryColor": "#FF6020",
+    "backgroundColor": "#0A0A0F",
+    "heroTagline": "Your Game. Your Voice.",
+    "heroSubtext": "Join the conversation and get involved.",
+    "blocks": [],
+    "sectionOrder": [
+      "sponsor",
+      "hero",
+      "blocks"
+    ],
+    "isPublished": false,
+    "updatedAt": "2026-02-18T09:21:17.637Z"
   }
 ]
