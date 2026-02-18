@@ -205,7 +205,15 @@ export default function HubEditorPage() {
     const handleSave = async () => {
         if (!hub) return;
         setSaving(true);
-        await fetch(`/api/hubs/${slug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(hub) });
+        const res = await fetch(`/api/hubs/${hub.slug}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(hub) });
+        const updated = await res.json();
+        if (updated && !updated.error) {
+            setHub(normalizeHub(updated));
+            // If slug changed, update URL
+            if (updated.slug && updated.slug !== slug) {
+                router.replace(`/admin/${updated.slug}`);
+            }
+        }
         setSaving(false);
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);

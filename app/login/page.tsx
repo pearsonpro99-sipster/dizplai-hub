@@ -1,23 +1,34 @@
-// app/login/page.tsx — Dizplai Hub login page (UI only, wire to Supabase Auth later)
+// app/login/page.tsx — Dizplai Hub login with Supabase Auth
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // TODO: Wire to Supabase Auth
-        // For now, just redirect to admin
-        setTimeout(() => {
-            router.push("/admin");
-        }, 800);
+        setError("");
+
+        const { error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (authError) {
+            setError(authError.message);
+            setIsLoading(false);
+            return;
+        }
+
+        router.push("/admin");
     };
 
     return (
@@ -27,7 +38,6 @@ export default function LoginPage() {
             <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#7628FE]/[0.04] rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute top-1/4 left-0 w-[300px] h-[300px] bg-[#FF6020]/[0.03] rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Subtle grid */}
             <div
                 className="absolute inset-0 opacity-[0.015]"
                 style={{
@@ -59,6 +69,12 @@ export default function LoginPage() {
                         Sign in to manage your interactive hubs
                     </p>
 
+                    {error && (
+                        <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+                            {error}
+                        </div>
+                    )}
+
                     <form onSubmit={handleLogin} className="space-y-4">
                         <div>
                             <label className="block text-[11px] font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
@@ -88,22 +104,6 @@ export default function LoginPage() {
                             />
                         </div>
 
-                        <div className="flex items-center justify-between pt-1">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 rounded border-white/20 bg-white/[0.06] text-[#FF10A8] focus:ring-[#FF10A8]/20 cursor-pointer accent-[#FF10A8]"
-                                />
-                                <span className="text-xs text-gray-400">Remember me</span>
-                            </label>
-                            <button
-                                type="button"
-                                className="text-xs text-[#FF10A8]/70 hover:text-[#FF10A8] transition-colors font-medium"
-                            >
-                                Forgot password?
-                            </button>
-                        </div>
-
                         <button
                             type="submit"
                             disabled={isLoading}
@@ -127,9 +127,7 @@ export default function LoginPage() {
                         Powered by{" "}
                         <span className="font-bold text-gray-500">Dizplai</span>
                         <span className="mx-2 text-gray-700">·</span>
-                        <span className="text-[#FF10A8]/40">
-                            Making attention mean more
-                        </span>
+                        <span className="text-[#FF10A8]/40">Making attention mean more</span>
                     </p>
                 </div>
             </div>
