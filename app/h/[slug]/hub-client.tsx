@@ -175,11 +175,11 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
                     <Hero hub={hub} isReady={isReady} />
 
                     {/* Blocks — px-6 (24px) side padding, gap-y-10 between hero and blocks */}
-                    <div className="px-6 pt-10 pb-24">
+                    <div className="px-6 pt-10 pb-32">
                         {sortedBlocks.map((block, i) => (
                             <div
                                 key={block.id}
-                                className={`mb-12 last:mb-0 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
+                                className={`mb-30 last:mb-0 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
                                 style={{ animationDelay: `${200 + i * 100}ms` }}
                             >
                                 <Block block={toBlockData(block)} />
@@ -194,7 +194,7 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
 
                         {/* Footer — generous spacing */}
                         <div
-                            className={`text-center pt-16 pb-8 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
+                            className={`text-center pt-24 pb-12 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
                             style={{ animationDelay: `${200 + sortedBlocks.length * 100 + 200}ms` }}
                         >
                             <p className="text-[11px] font-medium tracking-[0.2em] uppercase text-gray-600">
