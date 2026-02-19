@@ -60,21 +60,21 @@ export function Block({ block }: { block: BlockData }) {
                 )}
             </div>
 
-            {/* ── CONTENT — block colour background ── */}
-            {(block.title || block.description) && (
+            {/* ── CONTENT — block colour background, hidden if no content ── */}
+            {(block.title?.trim() || block.description?.trim()) ? (
                 <div className="px-8 py-6" style={{ backgroundColor: blockColor }}>
-                    {block.title && (
+                    {block.title?.trim() && (
                         <h3 className="text-[15px] font-bold text-white leading-snug">
                             {block.title}
                         </h3>
                     )}
-                    {block.description && (
+                    {block.description?.trim() && (
                         <p className="text-[13px] text-white/70 mt-2 leading-relaxed line-clamp-2 font-light">
                             {block.description}
                         </p>
                     )}
                 </div>
-            )}
+            ) : null}
         </div>
     );
 

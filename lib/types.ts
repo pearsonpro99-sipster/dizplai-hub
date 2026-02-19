@@ -57,10 +57,10 @@ export const DEFAULT_HUB: HubConfig = {
 };
 
 export const DEFAULT_BLOCK: Omit<ContentBlock, "id" | "sortOrder"> = {
-    title: "New Block",
-    description: "Tap to interact",
+    title: "",
+    description: "",
     imageUrl: "",
-    url: "https://example.com",
+    url: "",
     aspectRatio: "1:1",
     accentColor: "#FF10A8",
 };
@@ -98,7 +98,7 @@ export const GOOGLE_FONTS = [
 export function normalizeHub(hub: any): HubConfig {
     const blocks = (hub.blocks || hub.actionCards || []).map((b: any, i: number) => ({
         id: b.id || `block_${i}`,
-        title: b.title || "Untitled",
+        title: b.title ?? "",
         description: b.description || "",
         imageUrl: b.imageUrl || "",
         url: b.url || b.link || "",

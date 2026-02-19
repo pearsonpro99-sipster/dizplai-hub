@@ -65,20 +65,19 @@ function Hero({ hub, isReady }: { hub: HubConfig; isReady: boolean }) {
     return (
         <div
             className={`relative w-full overflow-hidden ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
-            style={{ minHeight: hasImage ? "320px" : "220px", animationDelay: "0ms" }}
+            style={{ minHeight: hasImage ? "440px" : "280px", animationDelay: "0ms" }}
         >
             {hasImage && (
-                <img src={hub.heroImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <img src={hub.heroImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover object-top" />
             )}
 
             <div className="absolute inset-0" style={{
                 background: hasImage
-                    ? `linear-gradient(to top, ${hub.backgroundColor} 0%, ${hub.backgroundColor}CC 30%, ${hub.backgroundColor}66 60%, transparent 100%)`
+                    ? `linear-gradient(to top, ${hub.backgroundColor} 0%, ${hub.backgroundColor}DD 25%, ${hub.backgroundColor}88 50%, ${hub.backgroundColor}33 75%, transparent 100%)`
                     : `linear-gradient(135deg, ${hub.blockColor}15, transparent)`,
             }} />
 
-            {/* pt-12 pb-8 hero padding */}
-            <div className="relative z-10 flex flex-col items-center justify-end h-full pt-12 pb-8" style={{ minHeight: hasImage ? "320px" : "220px" }}>
+            <div className="relative z-10 flex flex-col items-center justify-center h-full pt-20 pb-12" style={{ minHeight: hasImage ? "440px" : "280px" }}>
                 {/* Circular logo */}
                 <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center mb-5 border-2 shadow-xl"
                     style={{ borderColor: `${hub.blockColor}40`, backgroundColor: hub.logoUrl ? "transparent" : `${hub.blockColor}20`, boxShadow: `0 8px 32px ${hub.blockColor}20` }}>
@@ -174,12 +173,12 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
                     {/* Hero */}
                     <Hero hub={hub} isReady={isReady} />
 
-                    {/* Blocks — px-6 (24px) side padding, gap-y-10 between hero and blocks */}
-                    <div className="px-6 pt-10 pb-32">
+                    {/* Blocks — generous padding all around */}
+                    <div className="px-8 pt-14 pb-40">
                         {sortedBlocks.map((block, i) => (
                             <div
                                 key={block.id}
-                                className={`mb-30 last:mb-0 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
+                                className={`mb-24 last:mb-0 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
                                 style={{ animationDelay: `${200 + i * 100}ms` }}
                             >
                                 <Block block={toBlockData(block)} />
@@ -192,9 +191,9 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
                             </div>
                         )}
 
-                        {/* Footer — generous spacing */}
+                        {/* Footer */}
                         <div
-                            className={`text-center pt-24 pb-12 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
+                            className={`text-center pt-32 pb-16 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
                             style={{ animationDelay: `${200 + sortedBlocks.length * 100 + 200}ms` }}
                         >
                             <p className="text-[11px] font-medium tracking-[0.2em] uppercase text-gray-600">
