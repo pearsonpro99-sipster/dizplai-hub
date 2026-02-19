@@ -1,4 +1,4 @@
-// app/admin/[slug]/page.tsx — Hub editor: branding + blocks
+// app/admin/[slug]/page.tsx — Hub editor with client feedback applied
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import {
     ArrowLeft, Save, Plus, Trash2, ExternalLink, Eye,
     ChevronDown, ChevronUp, GripVertical, CircleCheck, CircleDashed,
-    Image as ImageIcon, Square, RectangleHorizontal, RectangleVertical,
+    Image as ImageIcon,
 } from "lucide-react";
 import {
     DndContext, closestCenter, KeyboardSensor, PointerSensor,
@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { HubConfig, ContentBlock } from "@/lib/types";
-import { DEFAULT_BLOCK, ASPECT_RATIOS, normalizeHub } from "@/lib/types";
+import { DEFAULT_BLOCK, GOOGLE_FONTS, normalizeHub } from "@/lib/types";
 import { ImageUpload } from "@/components/ImageUpload";
 import { QRCodeBlock } from "@/components/QRCodeBlock";
 
@@ -38,10 +38,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
     return (
-        <input
-            type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-sm text-white placeholder-gray-500 outline-none focus:border-[#FF10A8]/50 focus:ring-2 focus:ring-[#FF10A8]/10 transition-all"
-        />
+        <input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+            className="w-full px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-sm text-white placeholder-gray-500 outline-none focus:border-[#FF10A8]/50 focus:ring-2 focus:ring-[#FF10A8]/10 transition-all" />
     );
 }
 
@@ -51,6 +49,19 @@ function ColorInput({ value, onChange }: { value: string; onChange: (v: string) 
             <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="w-10 h-10 rounded-xl border border-white/10 bg-transparent cursor-pointer" />
             <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white font-mono outline-none focus:border-[#FF10A8]/50 transition-colors" />
         </div>
+    );
+}
+
+function FontPicker({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+    return (
+        <Field label={label}>
+            <select value={value} onChange={(e) => onChange(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white outline-none focus:border-[#FF10A8]/50 transition-colors appearance-none cursor-pointer">
+                {GOOGLE_FONTS.map((f) => (
+                    <option key={f} value={f} className="bg-[#1a1a24]">{f}</option>
+                ))}
+            </select>
+        </Field>
     );
 }
 
@@ -71,31 +82,8 @@ function Section({ title, description, children, defaultOpen = true }: { title: 
     );
 }
 
-// ─── ASPECT RATIO PICKER ─────────────────────────────────────────────
-function AspectRatioPicker({ value, onChange }: { value: string; onChange: (v: "1:1" | "16:9" | "9:16") => void }) {
-    const options: { value: "1:1" | "16:9" | "9:16"; label: string; icon: typeof Square }[] = [
-        { value: "1:1", label: "1:1", icon: Square },
-        { value: "16:9", label: "16:9", icon: RectangleHorizontal },
-        { value: "9:16", label: "9:16", icon: RectangleVertical },
-    ];
-    return (
-        <div className="flex gap-2">
-            {options.map((opt) => {
-                const Icon = opt.icon;
-                const isActive = value === opt.value;
-                return (
-                    <button key={opt.value} onClick={() => onChange(opt.value)}
-                        className={`flex-1 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all border ${isActive ? "bg-[#FF10A8]/10 border-[#FF10A8]/30 text-[#FF10A8]" : "bg-white/[0.03] border-white/[0.06] text-gray-500 hover:text-gray-300 hover:border-white/10"}`}>
-                        <Icon size={14} />{opt.label}
-                    </button>
-                );
-            })}
-        </div>
-    );
-}
-
 // ─── SORTABLE BLOCK EDITOR ───────────────────────────────────────────
-function SortableBlockEditor({ block, onUpdate, onDelete }: { block: ContentBlock; onUpdate: (u: Partial<ContentBlock>) => void; onDelete: () => void }) {
+function SortableBlockEditor({ block, onUpdate, onDelete, onSave }: { block: ContentBlock; onUpdate: (u: Partial<ContentBlock>) => void; onDelete: () => void; onSave: () => void }) {
     const [expanded, setExpanded] = useState(false);
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
     const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1, zIndex: isDragging ? 10 : 0 };
@@ -110,8 +98,8 @@ function SortableBlockEditor({ block, onUpdate, onDelete }: { block: ContentBloc
                     {block.imageUrl ? <img src={block.imageUrl} alt="" className="w-full h-full object-cover" /> : <ImageIcon size={14} style={{ color: block.accentColor }} />}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{block.title}</p>
-                    <p className="text-[11px] text-gray-500 truncate">{block.aspectRatio} · {block.url}</p>
+                    <p className="text-sm font-medium text-white truncate">{block.title || "Untitled Block"}</p>
+                    <p className="text-[11px] text-gray-500 truncate">{block.url || "No URL"}</p>
                 </div>
                 {block.badge && (
                     <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase" style={{ backgroundColor: block.accentColor + "20", color: block.accentColor }}>{block.badge}</span>
@@ -123,20 +111,19 @@ function SortableBlockEditor({ block, onUpdate, onDelete }: { block: ContentBloc
 
             {expanded && (
                 <div className="px-4 pb-4 pt-2 border-t border-white/[0.04] space-y-4">
-                    <ImageUpload label="Block Image" value={block.imageUrl} onChange={(v) => onUpdate({ imageUrl: v })} placeholder="Drop an image for this block" />
-                    <Field label="Layout">
-                        <AspectRatioPicker value={block.aspectRatio} onChange={(v) => onUpdate({ aspectRatio: v })} />
-                    </Field>
+                    <ImageUpload label="Block Image" value={block.imageUrl} onChange={(v) => onUpdate({ imageUrl: v })} placeholder="16:9 image for this block" />
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Title"><TextInput value={block.title} onChange={(v) => onUpdate({ title: v })} placeholder="Block title" /></Field>
                         <Field label="Badge"><TextInput value={block.badge || ""} onChange={(v) => onUpdate({ badge: v || undefined })} placeholder="e.g. LIVE, NEW" /></Field>
                     </div>
                     <Field label="Description"><TextInput value={block.description} onChange={(v) => onUpdate({ description: v })} placeholder="Short description" /></Field>
                     <Field label="URL"><TextInput value={block.url} onChange={(v) => onUpdate({ url: v })} placeholder="https://..." /></Field>
-                    <Field label="Accent Colour"><ColorInput value={block.accentColor} onChange={(v) => onUpdate({ accentColor: v })} /></Field>
-                    <div className="pt-2 flex justify-end">
+                    <div className="pt-2 flex items-center justify-between">
                         <button onClick={onDelete} className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-1.5">
-                            <Trash2 size={12} />Remove Block
+                            <Trash2 size={12} />Remove
+                        </button>
+                        <button onClick={onSave} className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#FF10A8] to-[#D00E8C] hover:from-[#FF2DB8] hover:to-[#FF10A8] text-xs font-bold text-white transition-all flex items-center gap-1.5 shadow-lg shadow-[#FF10A8]/20">
+                            <Save size={12} />Save Block
                         </button>
                     </div>
                 </div>
@@ -150,18 +137,18 @@ function MiniPreview({ hub }: { hub: HubConfig }) {
     return (
         <div className="rounded-2xl overflow-hidden p-4 w-full" style={{ backgroundColor: hub.backgroundColor }}>
             <div className="text-center mb-3">
-                <div className="w-8 h-8 rounded-lg mx-auto mb-2 flex items-center justify-center overflow-hidden" style={{ backgroundColor: hub.primaryColor + "25" }}>
-                    {hub.logoUrl ? <img src={hub.logoUrl} alt="" className="w-5 h-5 object-contain" /> : <span className="text-xs font-bold" style={{ color: hub.primaryColor }}>{hub.eventName.charAt(0)}</span>}
+                <div className="w-8 h-8 rounded-full mx-auto mb-2 flex items-center justify-center overflow-hidden" style={{ backgroundColor: hub.blockColor + "25" }}>
+                    {hub.logoUrl ? <img src={hub.logoUrl} alt="" className="w-5 h-5 object-contain" /> : <span className="text-xs font-bold" style={{ color: hub.blockColor }}>{hub.eventName.charAt(0)}</span>}
                 </div>
                 {hub.heroTagline && <p className="text-[11px] font-bold text-white leading-tight">{hub.heroTagline}</p>}
             </div>
             <div className="space-y-1.5">
                 {(hub.blocks || []).slice(0, 4).map((block) => (
-                    <div key={block.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
-                        <div className="w-6 h-6 rounded flex items-center justify-center flex-shrink-0 overflow-hidden" style={{ backgroundColor: block.accentColor + "20" }}>
-                            {block.imageUrl ? <img src={block.imageUrl} alt="" className="w-full h-full object-cover" /> : <ImageIcon size={8} style={{ color: block.accentColor }} />}
+                    <div key={block.id} className="rounded-lg overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div className="h-8 bg-white/[0.04]" />
+                        <div className="px-2 py-1.5" style={{ backgroundColor: hub.blockColor }}>
+                            <span className="text-[9px] text-white font-medium truncate block">{block.title}</span>
                         </div>
-                        <span className="text-[10px] text-white truncate flex-1">{block.title}</span>
                     </div>
                 ))}
                 {(hub.blocks || []).length === 0 && <p className="text-[9px] text-gray-500 text-center py-2">No blocks yet</p>}
@@ -209,7 +196,6 @@ export default function HubEditorPage() {
         const updated = await res.json();
         if (updated && !updated.error) {
             setHub(normalizeHub(updated));
-            // If slug changed, update URL
             if (updated.slug && updated.slug !== slug) {
                 router.replace(`/admin/${updated.slug}`);
             }
@@ -287,18 +273,22 @@ export default function HubEditorPage() {
             <div className="flex gap-6">
                 <div className="flex-1 space-y-4">
                     {/* Branding */}
-                    <Section title="Branding" description="Event identity and colours" defaultOpen={false}>
+                    <Section title="Branding" description="Event identity, colours, and typography" defaultOpen={false}>
                         <div className="grid grid-cols-2 gap-4">
                             <Field label="Event Name"><TextInput value={hub.eventName} onChange={(v) => updateHub({ eventName: v })} /></Field>
                             <Field label="URL Slug"><TextInput value={hub.slug} onChange={(v) => updateHub({ slug: v.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "") })} /></Field>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <Field label="Primary Colour"><ColorInput value={hub.primaryColor} onChange={(v) => updateHub({ primaryColor: v })} /></Field>
+                            <Field label="Block Colour"><ColorInput value={hub.blockColor} onChange={(v) => updateHub({ blockColor: v })} /></Field>
                             <Field label="Background Colour"><ColorInput value={hub.backgroundColor} onChange={(v) => updateHub({ backgroundColor: v })} /></Field>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <FontPicker label="Header Font" value={hub.headerFont} onChange={(v) => updateHub({ headerFont: v })} />
+                            <FontPicker label="Body Font" value={hub.bodyFont} onChange={(v) => updateHub({ bodyFont: v })} />
                         </div>
                         <ImageUpload label="Logo" value={hub.logoUrl} onChange={(v) => updateHub({ logoUrl: v })} placeholder="Drop your event logo here" aspectHint="Square (1:1) recommended" />
                         <ImageUpload label="Hero Background Image" value={hub.heroImageUrl} onChange={(v) => updateHub({ heroImageUrl: v })} placeholder="Full-width background image for the hero" aspectHint="Wide (16:9 or wider) recommended" />
-                        <Field label="Tagline"><TextInput value={hub.heroTagline} onChange={(v) => updateHub({ heroTagline: v })} placeholder="Your Game. Your Voice." /></Field>
+                        <Field label="Header Text"><TextInput value={hub.heroTagline} onChange={(v) => updateHub({ heroTagline: v })} placeholder="Your Game. Your Voice." /></Field>
                         <Field label="Subtext"><TextInput value={hub.heroSubtext} onChange={(v) => updateHub({ heroSubtext: v })} placeholder="Short description..." /></Field>
 
                         {/* Social Links */}
@@ -307,58 +297,31 @@ export default function HubEditorPage() {
                             <div className="space-y-2">
                                 {(hub.socialLinks || []).map((link, i) => (
                                     <div key={i} className="flex gap-2">
-                                        <select
-                                            value={link.platform}
-                                            onChange={(e) => {
-                                                const updated = [...(hub.socialLinks || [])];
-                                                updated[i] = { ...updated[i], platform: e.target.value };
-                                                updateHub({ socialLinks: updated });
-                                            }}
-                                            className="w-32 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white outline-none focus:border-[#FF10A8]/50 transition-colors appearance-none cursor-pointer"
-                                        >
+                                        <select value={link.platform} onChange={(e) => { const u = [...(hub.socialLinks || [])]; u[i] = { ...u[i], platform: e.target.value }; updateHub({ socialLinks: u }); }}
+                                            className="w-32 px-3 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-sm text-white outline-none focus:border-[#FF10A8]/50 transition-colors appearance-none cursor-pointer">
                                             {["twitter", "instagram", "tiktok", "youtube", "facebook", "linkedin", "whatsapp", "website"].map((p) => (
                                                 <option key={p} value={p} className="bg-[#1a1a24]">{p.charAt(0).toUpperCase() + p.slice(1)}</option>
                                             ))}
                                         </select>
-                                        <input
-                                            type="text"
-                                            value={link.url}
-                                            onChange={(e) => {
-                                                const updated = [...(hub.socialLinks || [])];
-                                                updated[i] = { ...updated[i], url: e.target.value };
-                                                updateHub({ socialLinks: updated });
-                                            }}
-                                            placeholder="https://..."
-                                            className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-sm text-white placeholder-gray-500 outline-none focus:border-[#FF10A8]/50 transition-all"
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                const updated = (hub.socialLinks || []).filter((_, idx) => idx !== i);
-                                                updateHub({ socialLinks: updated });
-                                            }}
-                                            className="p-2.5 rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
+                                        <input type="text" value={link.url} onChange={(e) => { const u = [...(hub.socialLinks || [])]; u[i] = { ...u[i], url: e.target.value }; updateHub({ socialLinks: u }); }}
+                                            placeholder="https://..." className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-sm text-white placeholder-gray-500 outline-none focus:border-[#FF10A8]/50 transition-all" />
+                                        <button onClick={() => updateHub({ socialLinks: (hub.socialLinks || []).filter((_, idx) => idx !== i) })}
+                                            className="p-2.5 rounded-xl hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
                                     </div>
                                 ))}
-                                <button
-                                    onClick={() => updateHub({ socialLinks: [...(hub.socialLinks || []), { platform: "twitter", url: "" }] })}
-                                    className="w-full py-2 rounded-xl border border-dashed border-white/[0.08] hover:border-[#FF10A8]/40 hover:bg-[#FF10A8]/5 text-xs text-gray-400 hover:text-[#FF10A8] transition-all flex items-center justify-center gap-1.5"
-                                >
+                                <button onClick={() => updateHub({ socialLinks: [...(hub.socialLinks || []), { platform: "twitter", url: "" }] })}
+                                    className="w-full py-2 rounded-xl border border-dashed border-white/[0.08] hover:border-[#FF10A8]/40 hover:bg-[#FF10A8]/5 text-xs text-gray-400 hover:text-[#FF10A8] transition-all flex items-center justify-center gap-1.5">
                                     <Plus size={14} />Add Social Link
                                 </button>
                             </div>
                         </div>
                     </Section>
 
-                    {/* Blocks — the main content area */}
-                    <Section title={`Content Blocks (${sortedBlocks.length})`} description="Add and reorder interactive blocks shown to fans">
+                    {/* Blocks */}
+                    <Section title={`Content Blocks (${sortedBlocks.length})`} description="Add and reorder blocks shown to fans">
                         {sortedBlocks.length === 0 ? (
                             <div className="text-center py-10">
-                                <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-3">
-                                    <ImageIcon size={22} className="text-gray-600" />
-                                </div>
+                                <div className="w-14 h-14 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-3"><ImageIcon size={22} className="text-gray-600" /></div>
                                 <p className="text-sm text-gray-400 font-medium">No blocks yet</p>
                                 <p className="text-xs text-gray-600 mt-1">Add your first block below to get started.</p>
                             </div>
@@ -367,7 +330,7 @@ export default function HubEditorPage() {
                                 <SortableContext items={sortedBlocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
                                     <div className="space-y-2">
                                         {sortedBlocks.map((block) => (
-                                            <SortableBlockEditor key={block.id} block={block} onUpdate={(u) => updateBlock(block.id, u)} onDelete={() => deleteBlock(block.id)} />
+                                            <SortableBlockEditor key={block.id} block={block} onUpdate={(u) => updateBlock(block.id, u)} onDelete={() => deleteBlock(block.id)} onSave={handleSave} />
                                         ))}
                                     </div>
                                 </SortableContext>

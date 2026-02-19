@@ -22,14 +22,20 @@ export interface HubConfig {
     eventName: string;
     logoUrl: string;
     heroImageUrl: string;
-    primaryColor: string;
+    blockColor: string;
     backgroundColor: string;
+    headerFont: string;
+    bodyFont: string;
+    customFontUrl: string;
     heroTagline: string;
     heroSubtext: string;
     socialLinks: SocialLink[];
     blocks: ContentBlock[];
     isPublished: boolean;
     updatedAt: string;
+    // Legacy compat
+    primaryColor?: string;
+    fontFamily?: string;
 }
 
 export const DEFAULT_HUB: HubConfig = {
@@ -37,8 +43,11 @@ export const DEFAULT_HUB: HubConfig = {
     eventName: "New Event",
     logoUrl: "",
     heroImageUrl: "",
-    primaryColor: "#FF10A8",
+    blockColor: "#FF10A8",
     backgroundColor: "#0A0A0F",
+    headerFont: "Outfit",
+    bodyFont: "Outfit",
+    customFontUrl: "",
     heroTagline: "Your Game. Your Voice.",
     heroSubtext: "Join the conversation and get involved.",
     socialLinks: [],
@@ -62,6 +71,29 @@ export const ASPECT_RATIOS = [
     { value: "9:16", label: "Tall (Stacked)" },
 ] as const;
 
+export const GOOGLE_FONTS = [
+    "Outfit",
+    "Inter",
+    "Roboto",
+    "Open Sans",
+    "Montserrat",
+    "Lato",
+    "Poppins",
+    "Raleway",
+    "Oswald",
+    "Nunito",
+    "Playfair Display",
+    "Bebas Neue",
+    "Anton",
+    "Barlow Condensed",
+    "DM Sans",
+    "Space Grotesk",
+    "Sora",
+    "Archivo",
+    "Plus Jakarta Sans",
+    "Clash Display",
+] as const;
+
 // Normalize any legacy hub data into current shape
 export function normalizeHub(hub: any): HubConfig {
     const blocks = (hub.blocks || hub.actionCards || []).map((b: any, i: number) => ({
@@ -81,8 +113,11 @@ export function normalizeHub(hub: any): HubConfig {
         eventName: hub.eventName || "Untitled Hub",
         logoUrl: hub.logoUrl || "",
         heroImageUrl: hub.heroImageUrl || "",
-        primaryColor: hub.primaryColor || "#FF10A8",
+        blockColor: hub.blockColor || hub.primaryColor || "#FF10A8",
         backgroundColor: hub.backgroundColor || "#0A0A0F",
+        headerFont: hub.headerFont || hub.fontFamily || "Outfit",
+        bodyFont: hub.bodyFont || hub.fontFamily || "Outfit",
+        customFontUrl: hub.customFontUrl || "",
         heroTagline: hub.heroTagline || "",
         heroSubtext: hub.heroSubtext || "",
         socialLinks: hub.socialLinks || [],

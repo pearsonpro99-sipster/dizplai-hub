@@ -1,12 +1,12 @@
-// app/h/[slug]/hub-client.tsx — Fan-facing hub with Hero + Blocks
+// app/h/[slug]/hub-client.tsx — Fan-facing hub with client feedback applied
 "use client";
 
 import { useState, useEffect } from "react";
-import type { HubConfig, SocialLink } from "@/lib/types";
+import type { HubConfig } from "@/lib/types";
 import { normalizeHub } from "@/lib/types";
 import { Block, type BlockData } from "@/components/Block";
 
-// ─── SOCIAL ICON SVGs ─────────────────────────────────────────────────
+// ─── SOCIAL ICONS (TikTok fixed) ─────────────────────────────────────
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
     twitter: (
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
@@ -20,7 +20,7 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
     ),
     tiktok: (
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.43v-7.15a8.16 8.16 0 005.58 2.17V11.2a4.85 4.85 0 01-3.77-1.74V6.69h3.77z" />
+            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
         </svg>
     ),
     youtube: (
@@ -50,89 +50,73 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
     ),
 };
 
+// ─── GOOGLE FONTS LOADER ──────────────────────────────────────────────
+function buildGoogleFontsUrl(fonts: string[]): string {
+    const unique = [...new Set(fonts.filter(Boolean))];
+    if (unique.length === 0) return "";
+    const families = unique.map((f) => `family=${f.replace(/ /g, "+")}:wght@300;400;500;600;700;800`).join("&");
+    return `https://fonts.googleapis.com/css2?${families}&display=swap`;
+}
+
 // ─── HERO COMPONENT ───────────────────────────────────────────────────
-function Hero({
-    hub,
-    isReady,
-}: {
-    hub: HubConfig;
-    isReady: boolean;
-}) {
+function Hero({ hub, isReady }: { hub: HubConfig; isReady: boolean }) {
     const hasImage = !!hub.heroImageUrl;
 
     return (
         <div
-            className={`relative w-full overflow-hidden rounded-b-3xl ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
-            style={{
-                minHeight: hasImage ? "320px" : "200px",
-                animationDelay: "0ms",
-            }}
+            className={`relative w-full overflow-hidden ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
+            style={{ minHeight: hasImage ? "320px" : "220px", animationDelay: "0ms" }}
         >
-            {/* Background image */}
             {hasImage && (
-                <img
-                    src={hub.heroImageUrl}
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover"
-                />
+                <img src={hub.heroImageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
             )}
 
-            {/* Gradient overlay */}
-            <div
-                className="absolute inset-0"
-                style={{
-                    background: hasImage
-                        ? `linear-gradient(to top, ${hub.backgroundColor} 0%, ${hub.backgroundColor}CC 30%, ${hub.backgroundColor}66 60%, transparent 100%)`
-                        : `linear-gradient(135deg, ${hub.primaryColor}15, transparent)`,
-                }}
-            />
+            <div className="absolute inset-0" style={{
+                background: hasImage
+                    ? `linear-gradient(to top, ${hub.backgroundColor} 0%, ${hub.backgroundColor}CC 30%, ${hub.backgroundColor}66 60%, transparent 100%)`
+                    : `linear-gradient(135deg, ${hub.blockColor}15, transparent)`,
+            }} />
 
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-end h-full px-5 pb-6 pt-16" style={{ minHeight: hasImage ? "320px" : "200px" }}>
-                {/* Logo */}
-                <div
-                    className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center mb-4 border-2 shadow-xl"
-                    style={{
-                        borderColor: `${hub.primaryColor}40`,
-                        backgroundColor: hub.logoUrl ? "transparent" : `${hub.primaryColor}20`,
-                        boxShadow: `0 8px 32px ${hub.primaryColor}20`,
-                    }}
-                >
+            {/* pt-12 pb-8 hero padding */}
+            <div className="relative z-10 flex flex-col items-center justify-end h-full pt-12 pb-8" style={{ minHeight: hasImage ? "320px" : "220px" }}>
+                {/* Circular logo */}
+                <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center mb-5 border-2 shadow-xl"
+                    style={{ borderColor: `${hub.blockColor}40`, backgroundColor: hub.logoUrl ? "transparent" : `${hub.blockColor}20`, boxShadow: `0 8px 32px ${hub.blockColor}20` }}>
                     {hub.logoUrl ? (
                         <img src={hub.logoUrl} alt={hub.eventName} className="w-full h-full object-cover" />
                     ) : (
-                        <span className="text-2xl font-extrabold" style={{ color: hub.primaryColor }}>
+                        <span className="text-2xl font-extrabold" style={{ color: hub.blockColor, fontFamily: `'${hub.headerFont}', sans-serif` }}>
                             {hub.eventName.charAt(0)}
                         </span>
                     )}
                 </div>
 
-                {/* Title */}
+                {/* Header — case sensitive (no uppercase forced), bold, tracking-tighter */}
                 {hub.heroTagline && (
-                    <h1 className="text-2xl font-extrabold tracking-tight text-white text-center uppercase leading-tight max-w-[340px]">
+                    <h1
+                        className="text-2xl font-bold tracking-tighter text-white text-center leading-tight max-w-[340px]"
+                        style={{ fontFamily: `'${hub.headerFont}', sans-serif` }}
+                    >
                         {hub.heroTagline}
                     </h1>
                 )}
 
-                {/* Subtitle */}
+                {/* Subheader — muted gray, leading-relaxed */}
                 {hub.heroSubtext && (
-                    <h2 className="text-sm text-gray-300 text-center mt-2 max-w-[300px] leading-relaxed">
+                    <h2
+                        className="text-sm text-gray-400 text-center mt-2 max-w-[300px] leading-relaxed"
+                        style={{ fontFamily: `'${hub.bodyFont}', sans-serif` }}
+                    >
                         {hub.heroSubtext}
                     </h2>
                 )}
 
-                {/* Social icons */}
+                {/* Social icons row */}
                 {hub.socialLinks && hub.socialLinks.length > 0 && (
-                    <div className="flex items-center gap-4 mt-4">
+                    <div className="flex items-center gap-4 mt-5">
                         {hub.socialLinks.map((link, i) => (
-                            <a
-                                key={i}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gray-400 hover:text-white transition-colors active:scale-90"
-                                title={link.platform}
-                            >
+                            <a key={i} href={link.url} target="_blank" rel="noopener noreferrer"
+                                className="text-gray-400 hover:text-white transition-colors active:scale-90" title={link.platform}>
                                 {SOCIAL_ICONS[link.platform] || SOCIAL_ICONS.website}
                             </a>
                         ))}
@@ -148,13 +132,9 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
     const [isReady, setIsReady] = useState(false);
     const hub = normalizeHub(rawHub);
 
-    useEffect(() => {
-        setIsReady(true);
-    }, []);
+    useEffect(() => { setIsReady(true); }, []);
 
-    const sortedBlocks = [...(hub.blocks || [])].sort(
-        (a, b) => a.sortOrder - b.sortOrder
-    );
+    const sortedBlocks = [...(hub.blocks || [])].sort((a, b) => a.sortOrder - b.sortOrder);
 
     const toBlockData = (block: (typeof sortedBlocks)[0]): BlockData => ({
         id: block.id,
@@ -162,19 +142,20 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
         description: block.description,
         imageUrl: block.imageUrl || "",
         href: block.url || "",
-        aspectRatio: block.aspectRatio || "1:1",
         badge: block.badge,
-        accentColor: block.accentColor,
+        accentColor: hub.blockColor,
     });
+
+    const fontsUrl = buildGoogleFontsUrl([hub.headerFont, hub.bodyFont]);
 
     return (
         <>
             <style jsx global>{`
-        @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");
+        ${fontsUrl ? `@import url("${fontsUrl}");` : `@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");`}
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
           background: ${hub.backgroundColor};
-          font-family: 'Outfit', sans-serif;
+          font-family: '${hub.bodyFont || "Outfit"}', sans-serif;
           -webkit-font-smoothing: antialiased;
           overscroll-behavior: none;
         }
@@ -193,19 +174,17 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
                     {/* Hero */}
                     <Hero hub={hub} isReady={isReady} />
 
-                    {/* Blocks — 16px padding and gap */}
-                    <div className="px-4 pt-4 pb-20">
-                        <div className="space-y-4">
-                            {sortedBlocks.map((block, i) => (
-                                <div
-                                    key={block.id}
-                                    className={isReady ? "animate-fadeSlideUp" : "opacity-0"}
-                                    style={{ animationDelay: `${200 + i * 80}ms` }}
-                                >
-                                    <Block block={toBlockData(block)} />
-                                </div>
-                            ))}
-                        </div>
+                    {/* Blocks — px-6 (24px) side padding, gap-y-10 between hero and blocks */}
+                    <div className="px-6 pt-10 pb-24">
+                        {sortedBlocks.map((block, i) => (
+                            <div
+                                key={block.id}
+                                className={`mb-12 last:mb-0 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
+                                style={{ animationDelay: `${200 + i * 100}ms` }}
+                            >
+                                <Block block={toBlockData(block)} />
+                            </div>
+                        ))}
 
                         {sortedBlocks.length === 0 && (
                             <div className="text-center py-16">
@@ -213,12 +192,12 @@ export default function HubClient({ hub: rawHub }: { hub: HubConfig }) {
                             </div>
                         )}
 
-                        {/* Footer */}
+                        {/* Footer — generous spacing */}
                         <div
-                            className={`text-center mt-10 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
-                            style={{ animationDelay: `${200 + sortedBlocks.length * 80 + 100}ms` }}
+                            className={`text-center pt-16 pb-8 ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
+                            style={{ animationDelay: `${200 + sortedBlocks.length * 100 + 200}ms` }}
                         >
-                            <p className="text-xs font-medium tracking-wide uppercase text-gray-600">
+                            <p className="text-[11px] font-medium tracking-[0.2em] uppercase text-gray-600">
                                 Powered by Dizplai
                             </p>
                         </div>
