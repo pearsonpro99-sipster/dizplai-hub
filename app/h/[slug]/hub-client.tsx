@@ -33,7 +33,7 @@ function Hero({ hub, isReady }: { hub: HubConfig; isReady: boolean }) {
     return (
         <div
             className={`relative w-full overflow-hidden ${isReady ? "animate-fadeSlideUp" : "opacity-0"}`}
-            style={{ minHeight: hasImage ? 340 : 220, animationDelay: "0ms" }}
+            style={{ minHeight: hasImage ? 300 : 200, animationDelay: "0ms" }}
         >
             {hasImage && (
                 <img src={hub.heroImageUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
@@ -46,7 +46,7 @@ function Hero({ hub, isReady }: { hub: HubConfig; isReady: boolean }) {
                     : `linear-gradient(135deg, ${hub.blockColor}15, transparent)`,
             }} />
 
-            <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", paddingTop: 48, paddingBottom: 24, minHeight: hasImage ? 340 : 220 }}>
+            <div style={{ position: "relative", zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%", paddingTop: 24, paddingBottom: 28, minHeight: hasImage ? 300 : 200 }}>
                 {/* Logo */}
                 <div style={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, border: `2px solid ${hub.blockColor}40`, backgroundColor: hub.logoUrl ? "transparent" : `${hub.blockColor}20`, boxShadow: `0 8px 32px ${hub.blockColor}20` }}>
                     {hub.logoUrl ? (

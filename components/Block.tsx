@@ -62,7 +62,7 @@ export function Block({ block }: { block: BlockData }) {
 
             {/* ── CONTENT — block colour background, hidden if no content ── */}
             {(block.title?.trim() || block.description?.trim()) ? (
-                <div className="px-8 py-6" style={{ backgroundColor: blockColor }}>
+                <div className="px-10 py-8" style={{ backgroundColor: blockColor }}>
                     {block.title?.trim() && (
                         <h3 className="text-[15px] font-bold text-white leading-snug">
                             {block.title}
